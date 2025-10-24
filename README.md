@@ -6,6 +6,26 @@ This project automates the process of sending follow-up emails for job applicati
 
 - `src/email_generator.py`: Contains the main logic for sending follow-up emails.
 - `src/metadata/applications.json`: Stores metadata for the applications, including company names, roles, and email addresses.
+
+   Sample Format: 
+   {
+  "applications": [
+    {
+      "company": "companyName",
+      "role": "Software Engineer",
+      "emails": [
+        "johndoe@gmail.com"
+      ]
+    },
+    
+      "company": "companyName",
+      "role": "Software Engineer",
+      "emails": [
+        "johndoe1@gmail.com"
+      ]
+    }
+  ]
+}
 - `.env`: Contains environment variables for SMTP configuration and email credentials.
 - `requirements.txt`: Lists the Python dependencies required for the project.
 - `README.md`: Documentation for the project.
@@ -39,6 +59,10 @@ Run the email generator script to send follow-up emails:
 ```
 python src/email_generator.py
 ```
+
+Note: 
+
+Code contains DRY_RUN: it is by default False, if you want to check/ debug how the code is working without having to send emails in real every single time -- set it to 'True'
 
 ## License
 
