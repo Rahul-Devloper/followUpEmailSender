@@ -1,69 +1,104 @@
-# Follow-Up Email Project
+# Follow-Up Email Sender
 
-This project automates the process of sending follow-up emails for job applications. It uses Python to read application metadata from a JSON file and sends personalized emails based on that data.
+An automated tool for sending personalized follow-up emails for job applications using Python.
 
-## Project Structure
+## 📋 Features
 
-- `src/email_generator.py`: Contains the main logic for sending follow-up emails.
-- `src/metadata/applications.json`: Stores metadata for the applications, including company names, roles, and email addresses.
+- Automated email sending with rate limiting
+- Configurable SMTP settings
+- JSON-based application metadata
+- Dry run mode for testing
+- Logging support
 
-   Sample Format: 
-   {
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8 or higher
+- SMTP server access (Yahoo Mail account)
+- Application password for SMTP authentication
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Rahul-Devloper/followUpEmailSender.git
+   cd follow-up-email
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Configure environment variables:
+   Create a `.env` file in the project root:
+   ```env
+   EMAIL=your-email@yahoo.com
+   APP_PASSWORD=your-app-password
+   SMTP_HOST=smtp.mail.yahoo.com
+   SMTP_PORT_SSL=465
+   RATE_LIMIT_SECONDS=1.0
+   SMTP_DEBUG=True
+   ```
+
+## 📁 Project Structure
+
+```
+follow-up-email/
+├── src/
+│   ├── email_generator.py
+│   └── metadata/
+│       └── applications.json
+├── .env
+├── requirements.txt
+└── README.md
+```
+
+## 📝 Configuration
+
+### Application Metadata
+
+Update `src/metadata/applications.json` with your application details:
+
+```json
+{
   "applications": [
     {
-      "company": "companyName",
+      "company": "Example Corp",
       "role": "Software Engineer",
       "emails": [
-        "johndoe@gmail.com"
-      ]
-    },
-    
-      "company": "companyName",
-      "role": "Software Engineer",
-      "emails": [
-        "johndoe1@gmail.com"
+        "hr@example.com",
+        "recruiting@example.com"
       ]
     }
   ]
 }
-- `.env`: Contains environment variables for SMTP configuration and email credentials.
-- `requirements.txt`: Lists the Python dependencies required for the project.
-- `README.md`: Documentation for the project.
-
-## Setup Instructions
-
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   cd follow-up-email
-   ```
-
-2. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-3. Create a `.env` file in the root directory and add your SMTP configuration and email credentials:
-   ```
-   SMTP_HOST=<your_smtp_host>
-   SMTP_PORT_SSL=<your_smtp_port>
-   EMAIL=<your_email>
-   APP_PASSWORD=<your_app_password>
-   ```
-
-4. Update the `src/metadata/applications.json` file with your application details.
-
-## Usage
-
-Run the email generator script to send follow-up emails:
 ```
+
+### Debug Mode
+
+Set `DRY_RUN = True` in the code to test without sending actual emails.
+
+## 🔧 Usage
+
+Run the email sender:
+```bash
 python src/email_generator.py
 ```
 
-Note: 
+## 📚 Logging
 
-Code contains DRY_RUN: it is by default False, if you want to check/ debug how the code is working without having to send emails in real every single time -- set it to 'True'
+The application logs all operations to the console with timestamps and severity levels.
 
-## License
+## 🤝 Contributing
 
-This project is licensed under the MIT License.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
