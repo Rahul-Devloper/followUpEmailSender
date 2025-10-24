@@ -28,6 +28,10 @@ SMTP_DEBUG = os.getenv("SMTP_DEBUG")
 # =========Important=========
 DRY_RUN = False  # Set to True to skip actual sending
 
+
+# sender Name
+Sender_Name = os.getenv("SENDER_NAME")
+
 # --- FIXED: make this a flat list of dicts (remove the accidental extra list) ---
 def load_applications() -> List[Dict[str, Any]]:
     json_path = os.path.join(os.path.dirname(__file__), "metadata", "applications.json")
@@ -63,7 +67,7 @@ def build_body(company: str, role: str) -> str:
         f"Thank you for your time and consideration, and I look forward to hearing from you.\n"
         f"\n"
         f"Cheers,\n"
-        f"Rahul\n"
+        f"{Sender_Name}\n"
     )
 
 def create_message(sender: str, recipient: str, company: str, role: str) -> EmailMessage:
