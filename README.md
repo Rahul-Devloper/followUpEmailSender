@@ -32,16 +32,26 @@ An automated tool for sending personalized follow-up emails for job applications
    ```
 
 3. Configure environment variables:
-   Create a `.env` file in the project root:
+   Create a `.env` file in the project root: SMTP is subject to your sender email address domain. Each SMTP is different. Check your email sender's SMTP config and put them in your .env accordingly.
    ```env
-   EMAIL=your-email@yahoo.com
+   EMAIL=your-email@mail.com
    APP_PASSWORD=your-app-password
-   SMTP_HOST=smtp.mail.yahoo.com
-   SMTP_PORT_SSL=465
+   SMTP_HOST=smtp.mail.domain.com
+   SMTP_PORT_SSL=portNumber
    RATE_LIMIT_SECONDS=1.0
    SMTP_DEBUG=True
+   SENDER_NAME=Your Name
    ```
 
+   For other email providers:
+   - Gmail: Use `smtp.gmail.com` and port `465`
+   - Outlook: Use `smtp-mail.outlook.com` and port `587`
+   - Custom domain: Check your email provider's SMTP settings
+
+   Note: Make sure to:
+   - Generate an app password from your email provider's security settings
+   - Never commit the `.env` file to version control
+   - Keep your APP_PASSWORD secure
 ## 📁 Project Structure
 
 ```
