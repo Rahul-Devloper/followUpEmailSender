@@ -1,0 +1,8 @@
+follow-up-email
+├── src
+│   ├── email_generator.py
+│   └── metadata
+│       └── applications.json
+├── .env
+├── requirements.txt
+└── README.md
