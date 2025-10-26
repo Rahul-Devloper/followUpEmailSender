@@ -28,7 +28,8 @@ load_dotenv()
 # =========================
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT_SSL = int(os.getenv("SMTP_PORT_SSL"))
-RATE_LIMIT_SECONDS = float(os.getenv("RATE_LIMIT_SECONDS"))  # Pause between emails to avoid rate limiting
+# Pause between emails to avoid rate limiting
+RATE_LIMIT_SECONDS = float(os.getenv("RATE_LIMIT_SECONDS"))
 SMTP_DEBUG = os.getenv("SMTP_DEBUG")
 
 # When True, shows what would be sent without actually sending emails
@@ -250,7 +251,8 @@ if __name__ == "__main__":
     # Verify credentials are available
     if not sender_email or not app_password:
         logger.error("Missing EMAIL or APP_PASSWORD environment variables.")
-        logger.error("Example:\n  export EMAIL='you@yahoo.com'\n  export APP_PASSWORD='xxxx-xxxx-xxxx-xxxx'")
+        logger.error(
+            "Example:\n  export EMAIL='you@yahoo.com'\n  export APP_PASSWORD='xxxx-xxxx-xxxx-xxxx'")
         raise SystemExit(1)
 
     # Start sending process
