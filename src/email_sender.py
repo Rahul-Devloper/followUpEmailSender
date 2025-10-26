@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
+"""
+Email Sender Script
+------------------
+This script automates sending follow-up emails for job applications.
+It reads application data from a JSON file and sends personalized emails
+using SMTP over SSL.
+"""
+
 from dotenv import load_dotenv
 import json
-
 import os
 import ssl
 import time
@@ -13,38 +20,35 @@ import smtplib
 import socket
 import traceback
 
-
+# Load environment variables from .env file
 load_dotenv()
 
-
 # =========================
-# CONFIG
+# SMTP Configuration
 # =========================
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT_SSL = int(os.getenv("SMTP_PORT_SSL"))
-RATE_LIMIT_SECONDS = float(os.getenv("RATE_LIMIT_SECONDS"))
+RATE_LIMIT_SECONDS = float(os.getenv("RATE_LIMIT_SECONDS"))  # Pause between emails to avoid rate limiting
 SMTP_DEBUG = os.getenv("SMTP_DEBUG")
 
-# =========Important=========
-DRY_RUN = False  # Set to True to skip actual sending
+# When True, shows what would be sent without actually sending emails
+DRY_RUN = False
 
-
-# sender Name
+# Name that appears in email signature
 Sender_Name = os.getenv("SENDER_NAME")
 
-# --- FIXED: make this a flat list of dicts (remove the accidental extra list) ---
 def load_applications() -> List[Dict[str, Any]]:
+    """
+    Loads application data from applications.json file.
+    Returns a list of dictionaries containing company, role, and recipient emails.
+    """
     json_path = os.path.join(os.path.dirname(__file__), "metadata", "applications.json")
     with open(json_path, "r") as f:
         data = json.load(f)
     return data["applications"]
 
-# Update the main section:
-if __name__ == "__main__":
-    # Load applications from JSON
-    applications = load_applications()
 # =========================
-# Logging setup
+# Logging Configuration
 # =========================
 logging.basicConfig(
     level=logging.INFO,
@@ -54,13 +58,20 @@ logging.basicConfig(
 logger = logging.getLogger("yahoo-sender")
 
 def build_subject(role: str) -> str:
+    """Generates email subject line based on the job role"""
     return f"Follow-up on my application for {role}"
 
 def build_body(company: str, role: str) -> str:
-    # fixed grammar: "interested in"
+    """
+    Generates personalized email body with:
+    - Greeting
+    - Follow-up message
+    - Request for feedback
+    - Signature
+    """
     return (
         f"Hi {company} hiring team,\n\n"
-        f"I hope you’re doing well. I just wanted to kindly check in again regarding the {role} position. "
+        f"I hope you're doing well. I just wanted to kindly check in again regarding the {role} position. "
         f"I'm still enthusiastic and interested in the role at {company} and would love to know if there are any updates on the next steps.\n"
         f"\n"
         f"If I'm not selected for this role, I would love to get some feedback so that it would help me to better position myself in future applications.\n"
@@ -71,6 +82,10 @@ def build_body(company: str, role: str) -> str:
     )
 
 def create_message(sender: str, recipient: str, company: str, role: str) -> EmailMessage:
+    """
+    Creates an EmailMessage object with all necessary headers and content.
+    Includes: From, To, Date, Message-ID, Subject, and body text.
+    """
     msg = EmailMessage()
     msg["From"] = sender
     msg["To"] = recipient
@@ -80,15 +95,19 @@ def create_message(sender: str, recipient: str, company: str, role: str) -> Emai
     msg.set_content(build_body(company, role))
     return msg
 
-# -------- Helpers to make input bulletproof --------
+# -------- Input Validation Helpers --------
 def _is_email_like(s: str) -> bool:
+    """Basic validation to check if a string looks like an email address"""
     s = s.strip()
     return "@" in s and "." in s and " " not in s
 
 def _coerce_emails(value: Any) -> List[str]:
     """
-    Accepts list/tuple/set of strings, or a comma/semicolon-separated string.
-    Returns a deduped list of email-like strings.
+    Converts various input formats into a clean list of email addresses.
+    Handles:
+    - Lists/tuples/sets of strings
+    - Comma/semicolon separated strings
+    Removes duplicates and invalid emails.
     """
     emails: List[str] = []
     if value is None:
@@ -104,7 +123,11 @@ def _coerce_emails(value: Any) -> List[str]:
 
 def normalize_applications(apps: Iterable[Any]) -> List[Dict[str, Any]]:
     """
-    Flattens nested lists, validates structure, coerces emails, and drops invalid rows.
+    Cleans and validates application data:
+    - Flattens nested structures
+    - Validates required fields
+    - Normalizes email addresses
+    - Removes invalid entries
     """
     flat: List[Any] = []
     for item in apps:
@@ -133,6 +156,14 @@ def normalize_applications(apps: Iterable[Any]) -> List[Dict[str, Any]]:
     return cleaned
 
 def send_all(applications_in: Iterable[Any], sender: str, password: str) -> None:
+    """
+    Main function to send emails to all recipients:
+    - Normalizes input data
+    - Establishes SMTP connection
+    - Sends emails with rate limiting
+    - Handles errors and provides summary
+    - Supports dry run mode
+    """
     apps = normalize_applications(applications_in)
 
     total_targets = sum(len(app["emails"]) for app in apps)
@@ -212,17 +243,15 @@ def send_all(applications_in: Iterable[Any], sender: str, password: str) -> None
                 logger.warning("Error while closing SMTP connection (ignored).")
 
 if __name__ == "__main__":
-    # ❗ SECURITY: Never hardcode credentials.
-    # Rotate your Yahoo App Password now (the one you pasted is exposed).
+    # Load credentials from environment variables
     sender_email = os.getenv("EMAIL")
     app_password = os.getenv("APP_PASSWORD")
 
-    print(sender_email, app_password)
-
-
+    # Verify credentials are available
     if not sender_email or not app_password:
-        logger.error("Missing YAHOO_EMAIL or YAHOO_APP_PASSWORD environment variables.")
-        logger.error("Example:\n  export YAHOO_EMAIL='you@yahoo.com'\n  export YAHOO_APP_PASSWORD='xxxx-xxxx-xxxx-xxxx'")
+        logger.error("Missing EMAIL or APP_PASSWORD environment variables.")
+        logger.error("Example:\n  export EMAIL='you@yahoo.com'\n  export APP_PASSWORD='xxxx-xxxx-xxxx-xxxx'")
         raise SystemExit(1)
 
+    # Start sending process
     send_all(applications, sender_email, app_password)
