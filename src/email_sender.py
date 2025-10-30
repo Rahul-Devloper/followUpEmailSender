@@ -255,5 +255,8 @@ if __name__ == "__main__":
             "Example:\n  export EMAIL='you@yahoo.com'\n  export APP_PASSWORD='xxxx-xxxx-xxxx-xxxx'")
         raise SystemExit(1)
 
+    # Load applications data from JSON file
+    applications = load_applications()
+
     # Start sending process
     send_all(applications, sender_email, app_password)
