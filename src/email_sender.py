@@ -5,9 +5,17 @@ Email Sender Script
 This script automates sending follow-up emails for job applications.
 It reads application data from a JSON file and sends personalized emails
 using SMTP over SSL.
+
+Features:
+- Rate limiting to avoid spam detection
+- SSL encryption for secure email transmission
+- Dry run mode for testing
+- Detailed logging of all operations
+- Error handling and reporting
+- Input validation and normalization
 """
 
-from dotenv import load_dotenv
+# Standard library imports
 import json
 import os
 import ssl
@@ -20,37 +28,37 @@ import smtplib
 import socket
 import traceback
 
+# Third-party imports
+from dotenv import load_dotenv
+
 # Load environment variables from .env file
+# This allows configuration without changing code
 load_dotenv()
 
 # =========================
 # SMTP Configuration
 # =========================
+# Email server settings from environment variables
 SMTP_HOST = os.getenv("SMTP_HOST")
 SMTP_PORT_SSL = int(os.getenv("SMTP_PORT_SSL"))
-# Pause between emails to avoid rate limiting
+
+# Rate limiting: pause between emails to avoid triggering spam filters
 RATE_LIMIT_SECONDS = float(os.getenv("RATE_LIMIT_SECONDS"))
+
+# Enable SMTP debug output for troubleshooting
 SMTP_DEBUG = os.getenv("SMTP_DEBUG")
 
-# When True, shows what would be sent without actually sending emails
+# When True, simulates sending without actually sending emails
+# Useful for testing email content and configuration
 DRY_RUN = False
 
-# Name that appears in email signature
+# Sender's display name in email signature
 Sender_Name = os.getenv("SENDER_NAME")
-
-def load_applications() -> List[Dict[str, Any]]:
-    """
-    Loads application data from applications.json file.
-    Returns a list of dictionaries containing company, role, and recipient emails.
-    """
-    json_path = os.path.join(os.path.dirname(__file__), "metadata", "applications.json")
-    with open(json_path, "r") as f:
-        data = json.load(f)
-    return data["applications"]
 
 # =========================
 # Logging Configuration
 # =========================
+# Set up detailed logging with timestamps and log levels
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(message)s",
@@ -58,8 +66,42 @@ logging.basicConfig(
 )
 logger = logging.getLogger("yahoo-sender")
 
+
+def load_applications() -> List[Dict[str, Any]]:
+    """
+    Loads application data from applications.json file.
+    
+    File Structure Expected:
+    {
+        "applications": [
+            {
+                "company": "Company Name",
+                "role": "Job Title",
+                "emails": ["email1@company.com", "email2@company.com"]
+            },
+            ...
+        ]
+    }
+    
+    Returns:
+        List[Dict[str, Any]]: List of application dictionaries
+    """
+    json_path = os.path.join(os.path.dirname(
+        __file__), "metadata", "applications.json")
+    with open(json_path, "r") as f:
+        data = json.load(f)
+    return data["applications"]
+
 def build_subject(role: str) -> str:
-    """Generates email subject line based on the job role"""
+    """
+    Generates email subject line based on the job role.
+    
+    Args:
+        role (str): The job role/title being followed up on
+        
+    Returns:
+        str: Formatted subject line for the email
+    """
     return f"Follow-up on my application for {role}"
 
 def build_body(company: str, role: str) -> str:
@@ -85,7 +127,20 @@ def build_body(company: str, role: str) -> str:
 def create_message(sender: str, recipient: str, company: str, role: str) -> EmailMessage:
     """
     Creates an EmailMessage object with all necessary headers and content.
-    Includes: From, To, Date, Message-ID, Subject, and body text.
+    
+    Args:
+        sender (str): Sender's email address
+        recipient (str): Recipient's email address
+        company (str): Company name for personalization
+        role (str): Job role for subject and body
+        
+    Returns:
+        EmailMessage: Fully formatted email message ready to send
+        
+    Note:
+        - Includes automatic Message-ID generation
+        - Uses local timezone for Date header
+        - Body text is generated from build_body()
     """
     msg = EmailMessage()
     msg["From"] = sender
@@ -158,12 +213,25 @@ def normalize_applications(apps: Iterable[Any]) -> List[Dict[str, Any]]:
 
 def send_all(applications_in: Iterable[Any], sender: str, password: str) -> None:
     """
-    Main function to send emails to all recipients:
-    - Normalizes input data
-    - Establishes SMTP connection
-    - Sends emails with rate limiting
-    - Handles errors and provides summary
-    - Supports dry run mode
+    Main function to send emails to all recipients.
+    
+    Process:
+    1. Normalizes and validates input data
+    2. Establishes secure SMTP connection
+    3. Sends emails with rate limiting
+    4. Tracks successes and failures
+    5. Provides detailed summary
+    
+    Args:
+        applications_in (Iterable[Any]): Raw application data
+        sender (str): Sender's email address
+        password (str): SMTP authentication password
+        
+    Error Handling:
+    - SMTP connection failures
+    - Authentication errors
+    - Per-recipient delivery failures
+    - Network timeouts
     """
     apps = normalize_applications(applications_in)
 
@@ -244,6 +312,20 @@ def send_all(applications_in: Iterable[Any], sender: str, password: str) -> None
                 logger.warning("Error while closing SMTP connection (ignored).")
 
 if __name__ == "__main__":
+    """
+    Script entry point:
+    1. Verifies environment variables
+    2. Loads application data
+    3. Initiates email sending process
+    
+    Required Environment Variables:
+    - EMAIL: Sender's email address
+    - APP_PASSWORD: Application-specific password for SMTP auth
+    - SMTP_HOST: Email server hostname
+    - SMTP_PORT_SSL: SSL port number
+    - RATE_LIMIT_SECONDS: Delay between sends
+    - SENDER_NAME: Name to use in signature
+    """
     # Load credentials from environment variables
     sender_email = os.getenv("EMAIL")
     app_password = os.getenv("APP_PASSWORD")
