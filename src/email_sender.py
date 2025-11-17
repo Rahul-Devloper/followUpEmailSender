@@ -54,6 +54,13 @@ DRY_RUN = False
 
 # Sender's display name in email signature
 Sender_Name = os.getenv("SENDER_NAME")
+# Optional profile links for email signature
+Linkedin_Profile_URL = f"\nLinkedIn: {os.getenv('LINKEDIN_PROFILE_URL')}" if os.getenv(
+    "LINKEDIN_PROFILE_URL") else ""
+Portfolio_URL = f"\nPortfolio: {os.getenv('PORTFOLIO_URL')}" if os.getenv(
+    "PORTFOLIO_URL") else ""
+Github_Profile_URL = f"\nGitHub: {os.getenv('GITHUB_PROFILE_URL')}" if os.getenv(
+    "GITHUB_PROFILE_URL") else ""
 
 # =========================
 # Logging Configuration
@@ -122,6 +129,10 @@ def build_body(company: str, role: str) -> str:
         f"\n"
         f"Cheers,\n"
         f"{Sender_Name}\n"
+        f"\n"
+        f"{Linkedin_Profile_URL}"
+        f"{Portfolio_URL}"
+        f"{Github_Profile_URL}"
     )
 
 def create_message(sender: str, recipient: str, company: str, role: str) -> EmailMessage:
